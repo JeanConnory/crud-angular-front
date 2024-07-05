@@ -15,7 +15,7 @@ export class CoursesComponent implements OnInit {
 
   courses$: Observable<Course[]>;
 
-  displayedColumns = ['name', 'category'];
+  displayedColumns = ['_id', 'name', 'category'];
 
   constructor(private courseService: CoursesService, public dialog: MatDialog) {
     //this.courses = []; pode ser declarado dessa forma
