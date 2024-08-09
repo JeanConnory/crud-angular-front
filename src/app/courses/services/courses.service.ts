@@ -31,7 +31,6 @@ export class CoursesService {
       console.log('Update');
       return this.update(record);
     }
-    console.log('Create');
     return this.create(record);
   }
 
