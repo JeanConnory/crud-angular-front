@@ -1,13 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Course } from '../../model/course';
 import { CoursesService } from '../../services/courses.service';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { ErrorDialogComponent } from '../../../shared/components/error-dialog/error-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmationDialogComponent } from 'src/app/shared/components/confirmation-dialog/confirmation-dialog.component';
+import { CoursePage } from '../../model/CoursePage';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-courses',
@@ -16,26 +18,35 @@ import { ConfirmationDialogComponent } from 'src/app/shared/components/confirmat
 })
 export class CoursesComponent implements OnInit {
   //courses: Course[] = [];
-  courses$: Observable<Course[]> | null = null;
+  courses$: Observable<CoursePage> | null = null;
 
   displayedColumns = ['_id', 'name', 'category', 'actions'];
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  pageIndex = 0;
+  pageSize = 5;
 
   constructor(private courseService: CoursesService,
     public dialog: MatDialog,
     private router: Router,
     private route: ActivatedRoute,
-    private _snackBar: MatSnackBar) {
-
+    private _snackBar: MatSnackBar)
+    {
     this.refresh();
   }
 
-  refresh() {
+  refresh(pageEvent: PageEvent = {length: 0, pageIndex: 0, pageSize: 5}) {
     //this.courses = []; pode ser declarado dessa forma
-    this.courses$ = this.courseService.list()
+    this.courses$ = this.courseService.list(pageEvent.pageIndex, pageEvent.pageSize)
       .pipe(
+        tap(() => {
+          this.pageIndex = pageEvent.pageIndex;
+          this.pageSize = pageEvent.pageSize;
+        }),
         catchError(error => {
           this.onError('Erro ao carregar cursos.');
-          return of([])
+          return of({items: [], pageIndex: 0, totalPages: 0, totalElements: 0})
         })
       );//Pode ser usado no OnInit
   }
